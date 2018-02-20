@@ -1,6 +1,5 @@
 from wsgiref.simple_server import make_server
 from pyramid.config import Configurator
-from pyramid.response import Response
 import controllers.servidores as servidorController
 import argparse
 import logging
@@ -38,6 +37,11 @@ if __name__ == '__main__':
         config.add_route('getServidores', '/api/servidores/')
         config.add_view(servidorController.get_all_employees_api , route_name='getServidores')
 
+        config.add_route('getServidorMat', '/api/servidor/{mat:[0-9]+}')
+        config.add_view(servidorController.get_employee_by_id_api , route_name='getServidorMat')
+
+        config.add_route('postServidor', '/api/servidor/')
+        config.add_view(servidorController.create_a_new_employee_api , route_name='postServidor')
 
         app = config.make_wsgi_app()
     server = make_server('0.0.0.0', 8000, app)

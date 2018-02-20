@@ -36,24 +36,25 @@ def configure_params(p_servername, p_database, p_username, p_password):
 
 def get_all_employees_api(request):
     dados = db.get_all_employees(database_config)
-    j = json.dumps(dados)
-    return Response(body=j,status=200, content_type="application/json", charset="utf-8")
+    return Response(body=json.dumps(dados),status=200, content_type="application/json", charset="utf-8")
 
 # web service API servidor/{matricula}@
-def get_employee_by_id_api(request, mat_servidor=None):
+def get_employee_by_id_api(request):
+    mat=request.matchdict.get("mat")
+    print(type(request.params))
     if not validate_suported_mime_type(request):
         return "Unsupported Media Type", 415
     elif request.method == "GET":
-        if mat_servidor:
+        if mat:
             # retrieve one specific employee
             dados = db.get_employee_by_id(database_config, 
-                                          mat_servidor)
+                                          mat)
             if dados:
-                return json.dumps(dados), {'Content-Type': 'application/json; charset=utf-8'}
+                return Response(body=json.dumps(dados), content_type="application/json", charset="utf-8")
             else:
-                return "Not found", 404
+                return Response(status=404)
         else:
-            return "Bad Request", 400
+            return Response(status=400)
 
 # web service - create new employee
 def create_a_new_employee_api(request):
@@ -77,7 +78,7 @@ def create_a_new_employee_api(request):
 }
 	'''
     if not validate_suported_mime_type(request):
-        return "Unsupported Media Type", 415
+        return Response(status=415)
 
     # TODO test if the data is JSON
     new_employee_data = request.json
@@ -97,14 +98,16 @@ def create_a_new_employee_api(request):
 
     msg = ";\n".join(list(str(v) for k, v in data_validation.items() if v))
     if msg:
-        return "Bad request.\n{}.".format(msg), 400
+        return Response(body= "Bad request.\n{}.".format(msg), status=400)
 
     # storing data in the database
     new_id = db.create_employee(database_config, new_employee_data)
     if new_id:
-        return "", 201, {'Location': '/api/servidor/{}'.format(new_id), 'Content-Type': 'text/plain; charset=utf-8'}
+        hds = []
+        hds.append('location', )
+        return Response(status=201, headerlist= [('Location', '/api/servidor/{}'.format(new_id))] , content_type="text/plain", charset="utf-8")
     else:
-        return "Internal server error", 500
+        return Response(status=500)
 
 def __regex_validator(employee_data):
     '''Function to validate if a subset of fields has accepted pattern.
