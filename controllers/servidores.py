@@ -41,7 +41,6 @@ def get_all_employees_api(request):
 # web service API servidor/{matricula}@
 def get_employee_by_id_api(request):
     mat=request.matchdict.get("mat")
-    print(type(request.params))
     if not validate_suported_mime_type(request):
         return "Unsupported Media Type", 415
     elif request.method == "GET":
@@ -103,8 +102,6 @@ def create_a_new_employee_api(request):
     # storing data in the database
     new_id = db.create_employee(database_config, new_employee_data)
     if new_id:
-        hds = []
-        hds.append('location', )
         return Response(status=201, headerlist= [('Location', '/api/servidor/{}'.format(new_id))] , content_type="text/plain", charset="utf-8")
     else:
         return Response(status=500)
